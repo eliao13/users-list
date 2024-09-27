@@ -1,5 +1,5 @@
 import "./App.css";
-import { Users } from "./Users";
+import Users from "./Users";
 
 function App() {
   return (

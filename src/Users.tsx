@@ -2,7 +2,7 @@
  * Instructions:
  * Your task is to create a React component that displays a sorted list of users.
  * This component fetches user data from the API and displays the result.
- * The API endpoint is provided as `API_ENDPOINT` and returns an array of 5 users. 
+ * The API endpoint is provided as `API_ENDPOINT` and returns an array of 5 users.
  * The User type describes the shape of a single user.
  *
  * Acceptance Criteria:
@@ -17,6 +17,8 @@
  *
  */
 
+import { useEffect, useState } from "react";
+
 const API_ENDPOINT = "https://66f44b0177b5e88970990f5f.mockapi.io/users";
 
 type User = {
@@ -26,3 +28,55 @@ type User = {
   avatar: string; // This is a URL to an image
 };
 
+function Users() {
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+  const [users, setUsers] = useState<User[]>([]);
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      setLoading(true);
+      try {
+        const response = await fetch(API_ENDPOINT);
+        if (!response.ok) {
+          throw new Error("Failed to fetch users.");
+        }
+        const data = await response.json();
+        setUsers(data);
+      } catch (error) {
+        setError(error instanceof Error ? error.message : "Unexpected error.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUsers();
+  }, []);
+
+  const sortedUserList = users.sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  );
+
+  if (loading) {
+    return <p>Loading...</p>;
+  }
+
+  if (error) {
+    return <p>Error: {error}</p>;
+  }
+
+  return (
+    <div>
+      <h1>User List</h1>
+      {sortedUserList.map((user) => (
+        <div key={user.id}>
+          <img src={user.avatar} alt={user.name} />
+          <h2>{user.name}</h2>
+          <p>{new Date(user.createdAt).toLocaleString()}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export default Users;
